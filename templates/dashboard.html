@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HamidCognition Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Vazirmatn', sans-serif; background: #0f0f1e; color: #c5c6c7; margin: 0; padding: 20px; }
+        .container { max-width: 1200px; margin: auto; }
+        h1 { color: #66fcf1; text-align: center; font-size: 2.5rem; }
+        .card { background: #1a1a2e; padding: 20px; border-radius: 15px; margin: 20px 0; box-shadow: 0 8px 32px rgba(0,0,0,0.3); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .price { font-size: 3rem; text-align: center; color: #66fcf1; }
+        .pred { font-size: 1.8rem; text-align: center; padding: 15px; border-radius: 10px; margin: 10px 0; }
+        .buy { background: #1f2833; color: #66fcf1; }
+        .sell { background: #331f28; color: #ff4b5c; }
+        .neutral { background: #2d2d44; color: #c5c6c7; }
+        .pst { display: flex; justify-content: space-around; margin: 20px 0; }
+        .bar { width: 30%; text-align: center; }
+        .bar-fill { height: 20px; border-radius: 10px; background: #45a29e; transition: width 1s ease; }
+        .phase { text-align: center; font-size: 1.5rem; padding: 15px; border-radius: 10px; margin: 20px 0; }
+        .rupture { background: #ff4b5c; color: white; animation: pulse 2s infinite; }
+        .synthesis { background: #66fcf1; color: black; }
+        .unstable { background: #f39c12; color: white; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.7; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧠 HamidCognition Platform</h1>
+        <p style="text-align:center;">موتور شناختی واقعی حمید — زنده و در حال فکر کردن</p>
+
+        <div class="card">
+            <div class="price" id="current">در حال بارگذاری...</div>
+            <div id="timestamp" style="text-align:center; color:#888;"></div>
+        </div>
+
+        <div class="grid">
+            <div class="card pred buy" id="pred5">+۵ دقیقه: —</div>
+            <div class="card pred" id="pred10">+۱۰ دقیقه: —</div>
+            <div class="card pred" id="pred15">+۱۵ دقیقه: —</div>
+        </div>
+
+        <div class="card">
+            <h2 style="text-align:center; color:#66fcf1;">وضعیت شناختی لحظه‌ای</h2>
+            <div class="pst">
+                <div class="bar">
+                    <p>P (نفوذ): <span id="P">0.880</span></p>
+                    <div class="bar-fill" id="P-bar" style="width:88%;"></div>
+                </div>
+                <div class="bar">
+                    <p>S (اتصال): <span id="S">0.780</span></p>
+                    <div class="bar-fill" id="S-bar" style="width:78%;"></div>
+                </div>
+                <div class="bar">
+                    <p>T (تثبیت): <span id="T">0.400</span></p>
+                    <div class="bar-fill" id="T-bar" style="width:40%;"></div>
+                </div>
+            </div>
+            <div class="phase" id="phase">در حال پردازش...</div>
+            <p style="text-align:center;">انرژی: <span id="energy">—</span> | ریسک پرش: <span id="jump">—</span></p>
+        </div>
+    </div>
+
+    <script>
+        function updateData() {
+            fetch('/api/data')
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('current').innerText = data.current_price;
+                    document.getElementById('pred5').innerText = `+۵ دقیقه: ${data.pred_5min}`;
+                    document.getElementById('pred10').innerText = `+۱۰ دقیقه: ${data.pred_10min}`;
+                    document.getElementById('pred15').innerText = `+۱۵ دقیقه: ${data.pred_15min}`;
+                    document.getElementById('timestamp').innerText = data.timestamp;
+
+                    const c = data.cognitive;
+                    document.getElementById('P').innerText = c.P;
+                    document.getElementById('S').innerText = c.S;
+                    document.getElementById('T').innerText = c.T;
+                    document.getElementById('energy').innerText = c.energy;
+                    document.getElementById('jump').innerText = c.jump_risk;
+
+                    document.getElementById('P-bar').style.width = `${c.P * 100}%`;
+                    document.getElementById('S-bar').style.width = `${c.S * 100}%`;
+                    document.getElementById('T-bar').style.width = `${c.T * 100}%`;
+
+                    const phaseEl = document.getElementById('phase');
+                    phaseEl.innerText = c.phase.replace('_', ' ');
+                    phaseEl.className = 'phase';
+                    if (c.phase.includes('RUPTURE')) phaseEl.classList.add('rupture');
+                    else if (c.phase.includes('SYNTHESIS')) phaseEl.classList.add('synthesis');
+                    else if (c.phase.includes('UNSTABLE')) phaseEl.classList.add('unstable');
+                });
+        }
+
+        setInterval(updateData, 5000);
+        updateData();
+    </script>
+</body>
+</html>
